@@ -369,7 +369,7 @@ namespace HyperCasual.Runner
 
             // Use Unity Passport package to sign typed data function to sign the listing payload
             return await Passport.Instance.ZkEvmSignTypedDataV4(
-                JsonConvert.SerializeObject(message, Formatting.Indented));
+                      JsonConvert.SerializeObject(message, Formatting.Indented));
         }
 
         /// <summary>

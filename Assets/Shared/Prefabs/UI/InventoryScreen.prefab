@@ -1911,6 +1911,7 @@ MonoBehaviour:
   m_AssetObj: {fileID: 9215591978314449373}
   m_ListParent: {fileID: 3995018089020746221}
   m_ScrollView: {fileID: 6011150636714096262}
+  m_AddFunds: {fileID: 0}
 --- !u!1 &9098808456760454047
 GameObject:
   m_ObjectHideFlags: 0

@@ -150,23 +150,10 @@ namespace Xsolla.Core.Browser
 #endif
         }
 
-        private string GetBrowserPath()
-        {
-#if UNITY_EDITOR
-            return Application.persistentDataPath;
-#else
-			if (XsollaSettings.PackInAppBrowserInBuild)
-			{
-				var path = Application.dataPath;
-				path = System.IO.Directory.GetParent(path).FullName;
-				return System.IO.Path.Combine(path, ".local-chromium");
-			}
-			else
-			{
-				return Application.persistentDataPath;
-			}
-#endif
-        }
+		private string GetBrowserPath()
+		{
+			return Application.persistentDataPath;
+		}
 
         private void DestroyPreloader()
         {
