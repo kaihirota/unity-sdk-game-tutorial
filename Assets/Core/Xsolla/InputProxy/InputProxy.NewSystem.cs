@@ -12,6 +12,15 @@ namespace Xsolla.Core
     {
         private static readonly Dictionary<KeyCode, ButtonControl> Controls;
 
+        static InputProxy()
+        {
+            Controls = new Dictionary<KeyCode, ButtonControl>();
+            AddKeyboardControls();
+            AddMouseControls();
+        }
+
+        public static Vector3 MousePosition => Mouse.current.position.ReadValue();
+
         public static bool GetKeyDown(KeyCode code)
         {
             return Controls.ContainsKey(code) && Controls[code].wasPressedThisFrame;
@@ -20,11 +29,6 @@ namespace Xsolla.Core
         public static bool GetKeyUp(KeyCode code)
         {
             return Controls.ContainsKey(code) && Controls[code].wasReleasedThisFrame;
-        }
-
-        public static Vector3 MousePosition
-        {
-            get => Mouse.current.position.ReadValue();
         }
 
         private static void AddKeyboardControls()
@@ -98,13 +102,6 @@ namespace Xsolla.Core
 
             Controls.Add(code, control);
             return true;
-        }
-
-        static InputProxy()
-        {
-            Controls = new Dictionary<KeyCode, ButtonControl>();
-            AddKeyboardControls();
-            AddMouseControls();
         }
     }
 }

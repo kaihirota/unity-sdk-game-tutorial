@@ -1,7 +1,5 @@
-using System;
 using UnityEngine;
 #if UNITY_WEBGL || UNITY_EDITOR_OSX || UNITY_STANDALONE_OSX
-using System.Runtime.InteropServices;
 #endif
 
 namespace Xsolla.Core
@@ -48,7 +46,9 @@ namespace Xsolla.Core
                 InAppBrowser.AddInitHandler(() => InAppBrowser.UpdateSize(450, 760));
             }
             else
+            {
                 Application.OpenURL(url);
+            }
 #elif UNITY_WEBGL
 #pragma warning disable 0618
 			Application.ExternalEval($"window.open(\"{url}\",\"_blank\")");

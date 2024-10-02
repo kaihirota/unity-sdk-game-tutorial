@@ -14,13 +14,14 @@ using System.Collections.Generic;
 namespace Immutable.Search.Client
 {
     /// <summary>
-    /// A URI builder
+    ///     A URI builder
     /// </summary>
-    class WebRequestPathBuilder
+    internal class WebRequestPathBuilder
     {
-        private string _baseUrl;
+        private readonly string _baseUrl;
         private string _path;
         private string _query = "?";
+
         public WebRequestPathBuilder(string baseUrl, string path)
         {
             _baseUrl = baseUrl;
@@ -30,20 +31,14 @@ namespace Immutable.Search.Client
         public void AddPathParameters(Dictionary<string, string> parameters)
         {
             foreach (var parameter in parameters)
-            {
                 _path = _path.Replace("{" + parameter.Key + "}", Uri.EscapeDataString(parameter.Value));
-            }
         }
 
         public void AddQueryParameters(Multimap<string, string> parameters)
         {
             foreach (var parameter in parameters)
-            {
                 foreach (var value in parameter.Value)
-                {
                     _query = _query + parameter.Key + "=" + Uri.EscapeDataString(value) + "&";
-                }
-            }
         }
 
         public string GetFullUri()

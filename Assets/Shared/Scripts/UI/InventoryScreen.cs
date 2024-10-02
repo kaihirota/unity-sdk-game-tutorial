@@ -5,10 +5,6 @@ using Cysharp.Threading.Tasks;
 using HyperCasual.Core;
 using Immutable.Passport;
 using UnityEngine;
-using TMPro;
-using Immutable.Search.Client;
-using Immutable.Search.Model;
-using Immutable.Search.Api;
 using Xsolla.Core;
 
 namespace HyperCasual.Runner
@@ -191,7 +187,7 @@ namespace HyperCasual.Runner
         }
 
         /// <summary>
-        ///  handles the add funds button click
+        ///     handles the add funds button click
         /// </summary>
         private void OnAddFundsButtonClick()
         {

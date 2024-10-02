@@ -6,16 +6,16 @@ using UnityEngine.EventSystems;
 
 namespace Xsolla.Core.Browser
 {
-    internal class Mouse2DBehaviour : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler, IScrollHandler
+    internal class Mouse2DBehaviour : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler,
+        IScrollHandler
     {
-        private Canvas canvas;
-        private RectTransform selfRectTransform;
-
         private IXsollaBrowserKeyboardInput browserKeyboard;
         private IXsollaBrowserMouseInput browserMouse;
+        private Canvas canvas;
         private Display2DBehaviour displayBehaviour;
 
         private Coroutine mouseMovementCoroutine;
+        private RectTransform selfRectTransform;
 
         private void Awake()
         {
@@ -34,12 +34,15 @@ namespace Xsolla.Core.Browser
             StopAllCoroutines();
         }
 
+        void IPointerClickHandler.OnPointerClick(PointerEventData eventData)
+        {
+            var mousePosition = CalculateBrowserMousePosition(eventData.position);
+            browserMouse.Click(mousePosition, pos => XDebug.Log("Click handled by: " + pos));
+        }
+
         void IPointerEnterHandler.OnPointerEnter(PointerEventData eventData)
         {
-            if (mouseMovementCoroutine != null)
-            {
-                StopCoroutine(mouseMovementCoroutine);
-            }
+            if (mouseMovementCoroutine != null) StopCoroutine(mouseMovementCoroutine);
 
             mouseMovementCoroutine = StartCoroutine(MouseMovementCoroutine());
         }
@@ -51,12 +54,6 @@ namespace Xsolla.Core.Browser
                 StopCoroutine(mouseMovementCoroutine);
                 mouseMovementCoroutine = null;
             }
-        }
-
-        void IPointerClickHandler.OnPointerClick(PointerEventData eventData)
-        {
-            var mousePosition = CalculateBrowserMousePosition(eventData.position);
-            browserMouse.Click(mousePosition, pos => XDebug.Log("Click handled by: " + pos));
         }
 
         void IScrollHandler.OnScroll(PointerEventData eventData)
@@ -83,31 +80,31 @@ namespace Xsolla.Core.Browser
 
         private IEnumerator Display2DInitializationCoroutine()
         {
-            yield return new WaitWhile(() => displayBehaviour.CurrentRenderSize.x == 0 || displayBehaviour.CurrentRenderSize.y == 0);
+            yield return new WaitWhile(() =>
+                displayBehaviour.CurrentRenderSize.x == 0 || displayBehaviour.CurrentRenderSize.y == 0);
         }
 
-        private IEnumerator MouseMovementCoroutine(Vector2 lastPosition, Vector2 mousePosition, Action<Vector2> callback = null)
+        private IEnumerator MouseMovementCoroutine(Vector2 lastPosition, Vector2 mousePosition,
+            Action<Vector2> callback = null)
         {
             if ((mousePosition - lastPosition).sqrMagnitude > 1.0f)
-            {
                 yield return ActionExtensions.WaitMethod(
                     browserMouse.MoveTo,
                     mousePosition,
                     pos => callback?.Invoke(pos)
                 );
-            }
             else
-            {
                 yield return null;
-            }
         }
 
         private Vector2 CalculateBrowserMousePosition(Vector3 inputMousePosition)
         {
-            if (RectTransformUtility.ScreenPointToLocalPointInRectangle(selfRectTransform, inputMousePosition, canvas.worldCamera, out var point))
+            if (RectTransformUtility.ScreenPointToLocalPointInRectangle(selfRectTransform, inputMousePosition,
+                    canvas.worldCamera, out var point))
             {
                 point += selfRectTransform.sizeDelta * 0.5f; // Transform's anchors in the center of the rect
-                point.y = displayBehaviour.CurrentRenderSize.y - point.y; // Browser's axis are differs from Unity's axis
+                point.y = displayBehaviour.CurrentRenderSize.y -
+                          point.y; // Browser's axis are differs from Unity's axis
                 return point;
             }
 

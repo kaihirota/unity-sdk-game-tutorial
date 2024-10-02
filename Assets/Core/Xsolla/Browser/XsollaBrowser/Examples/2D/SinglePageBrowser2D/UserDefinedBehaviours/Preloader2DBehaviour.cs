@@ -7,10 +7,10 @@ namespace Xsolla.Core.Browser
     internal class Preloader2DBehaviour : MonoBehaviour
     {
         private int lastProgress;
-        private object progressLocker;
-        private GameObject preloaderObject;
-        private XsollaBrowser xsollaBrowser;
         private GameObject prefab;
+        private GameObject preloaderObject;
+        private object progressLocker;
+        private XsollaBrowser xsollaBrowser;
 
         private void Awake()
         {
@@ -64,7 +64,7 @@ namespace Xsolla.Core.Browser
                 yield break;
 
             if (progress < 99)
-                preloaderObject.GetComponent<PreloaderScript>().SetPercent((int)progress);
+                preloaderObject.GetComponent<PreloaderScript>().SetPercent(progress);
             else
                 preloaderObject.GetComponent<PreloaderScript>().SetText(string.Empty);
         }

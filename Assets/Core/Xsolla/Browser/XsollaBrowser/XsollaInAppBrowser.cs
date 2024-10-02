@@ -12,14 +12,14 @@ namespace Xsolla.Core.Browser
         [SerializeField] private GameObject BrowserPrefab;
         [SerializeField] private bool IsDontDestroyOnLoad;
         private GameObject BrowserObject;
-        private SinglePageBrowser2D SinglePageBrowser;
-        private XsollaBrowser XsollaBrowser;
 
         private CanvasScaler CanvasScaler;
-        private Vector2 ScalerOriginalReferenceSize;
+        private Display2DBehaviour Display2DBehaviour;
         private Vector2Int FramedModeDisplaySize;
         private Vector2Int FullscreenModeDisplaySize;
-        private Display2DBehaviour Display2DBehaviour;
+        private Vector2 ScalerOriginalReferenceSize;
+        private SinglePageBrowser2D SinglePageBrowser;
+        private XsollaBrowser XsollaBrowser;
 
         public event Action OpenEvent;
         public event Action<BrowserCloseInfo> CloseEvent;
@@ -92,10 +92,7 @@ namespace Xsolla.Core.Browser
 
         public void UpdateSize(int width, int height)
         {
-            if (!IsFullScreen)
-            {
-                FramedModeDisplaySize = new Vector2Int(width, height);
-            }
+            if (!IsFullScreen) FramedModeDisplaySize = new Vector2Int(width, height);
 
             if (IsOpened)
                 SinglePageBrowser.SetViewport(new Vector2Int(width, height));

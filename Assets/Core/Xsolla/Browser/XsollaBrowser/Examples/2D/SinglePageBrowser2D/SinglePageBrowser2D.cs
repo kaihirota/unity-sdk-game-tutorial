@@ -10,7 +10,7 @@ namespace Xsolla.Core.Browser
         [SerializeField] private Button CloseButton;
         [SerializeField] private Button FullscreenButton;
         [SerializeField] private Button BackButton;
-        [SerializeField] private Vector2Int Viewport = new Vector2Int(1920, 1080);
+        [SerializeField] private Vector2Int Viewport = new(1920, 1080);
         [SerializeField] private GameObject PreloaderPrefab;
 
 #pragma warning disable CS0067
@@ -58,10 +58,7 @@ namespace Xsolla.Core.Browser
             {
                 xsollaBrowser.Navigate.GetUrl(currentUrl =>
                 {
-                    if (string.IsNullOrEmpty(urlBeforePopup))
-                    {
-                        urlBeforePopup = currentUrl;
-                    }
+                    if (string.IsNullOrEmpty(urlBeforePopup)) urlBeforePopup = currentUrl;
                 });
                 xsollaBrowser.Navigate.To(popupUrl, newUrl => { BackButton.gameObject.SetActive(true); });
             });
@@ -83,7 +80,8 @@ namespace Xsolla.Core.Browser
             display.RedrawFrameCompleteEvent += DestroyPreloader;
             display.RedrawFrameCompleteEvent += EnableCloseButton;
             display.RedrawFrameCompleteEvent += EnableFullScreenButton;
-            display.ViewportChangedEvent += (width, height) => XDebug.Log("Display viewport changed: " + width + "x" + height);
+            display.ViewportChangedEvent += (width, height) =>
+                XDebug.Log("Display viewport changed: " + width + "x" + height);
 
             mouse = this.GetOrAddComponent<Mouse2DBehaviour>();
             keyboard = this.GetOrAddComponent<Keyboard2DBehaviour>();
