@@ -20,7 +20,8 @@ namespace HyperCasual.Runner
         [SerializeField] private BalanceObject m_Balance;
         [SerializeField] private AssetListObject m_AssetObj;
         [SerializeField] private Transform m_ListParent;
-        [SerializeField] private InfiniteScrollView m_ScrollView;
+        // [SerializeField] private InfiniteScrollView m_ScrollView;
+        [SerializeField] private InfiniteScrollGridView m_ScrollView;
         private readonly List<AssetModel> m_Assets = new();
 
         // Pagination
@@ -99,6 +100,7 @@ namespace HyperCasual.Runner
             if (assets != null && assets.Count > 0)
             {
                 m_Assets.AddRange(assets);
+                Debug.Log($"m_Assets.Count: {m_Assets.Count}");
                 m_ScrollView.TotalItemCount = m_Assets.Count;
             }
 
