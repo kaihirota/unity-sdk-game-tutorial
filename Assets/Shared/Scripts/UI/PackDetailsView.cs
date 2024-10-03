@@ -4,19 +4,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Numerics;
-using Cysharp.Threading.Tasks;
+using System.Text;
 using HyperCasual.Core;
-using Immutable.Orderbook.Api;
-using Immutable.Orderbook.Client;
-using Immutable.Orderbook.Model;
 using Immutable.Passport;
 using Immutable.Passport.Model;
-using Immutable.Search.Api;
-using Immutable.Search.Model;
 using Newtonsoft.Json;
 using TMPro;
 using UnityEngine;
-using ApiException = Immutable.Search.Client.ApiException;
 
 namespace HyperCasual.Runner
 {
@@ -91,13 +85,84 @@ namespace HyperCasual.Runner
                 newItem.Initialise(item);
                 m_Items.Add(newItem);
             }
+            
+            Debug.Log($"{m_Pack.name}: {m_Pack.function} {m_Pack.collection}");
         }
 
-        /// <summary>
-        ///     Handles the click event for the sell button.
-        /// </summary>
         private async void OnBuyButtonClicked()
         {
+            m_Progress.gameObject.SetActive(true);
+            m_BuyButton.gameObject.SetActive(false);
+
+            try
+            {
+                var requestBody = new
+                {
+                    amount = m_Pack?.price,
+                    address = SaveManager.Instance.WalletAddress
+                };
+                var json = JsonConvert.SerializeObject(requestBody);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+                using var client = new HttpClient();
+                var response = await client.PostAsync($"{Config.SERVER_URL}/pack/checkApprovalRequired", content);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    m_Progress.gameObject.SetActive(false);
+                    m_BuyButton.gameObject.SetActive(true);
+                    await m_CustomDialog.ShowDialog("Failed to buy", "Could not check if approval is required", "OK");
+                    return;
+                }
+
+                string responseBody = await response.Content.ReadAsStringAsync();
+                var approvalTransaction = JsonUtility.FromJson<Transaction>(responseBody);
+
+                if (approvalTransaction.data != null)
+                {
+                    var approvalResponse = await Passport.Instance.ZkEvmSendTransactionWithConfirmation(
+                        new TransactionRequest
+                        {
+                            to = approvalTransaction.to,
+                            data = approvalTransaction.data,
+                            value = approvalTransaction.amount
+                        });
+
+                    if (approvalResponse.status != "1")
+                    {
+                        m_Progress.gameObject.SetActive(false);
+                        m_BuyButton.gameObject.SetActive(true);
+                        await m_CustomDialog.ShowDialog("Failed to buy", "Could not get approval", "OK");
+                        return;
+                    }
+                }
+
+                var transactionResponse = await Passport.Instance.ZkEvmSendTransactionWithConfirmation(
+                    new TransactionRequest
+                    {
+                        to = m_Pack.collection,
+                        data = m_Pack.function,
+                        value = "0"
+                    });
+
+                if (transactionResponse.status != "1")
+                {
+                    m_Progress.gameObject.SetActive(false);
+                    m_BuyButton.gameObject.SetActive(true);
+                    await m_CustomDialog.ShowDialog("Failed to buy", "Could not buy pack", "OK");
+                    return;
+                }
+                
+                await m_CustomDialog.ShowDialog("Success", "You bought a pack!", "OK");
+            } 
+            catch (Exception ex)
+            {
+                Debug.Log($"Failed to buy: {ex.Message}");
+                Debug.LogError(ex.StackTrace);
+                await m_CustomDialog.ShowDialog("Failed to buy", ex.Message, "OK");
+            }
+            
+            m_BuyButton.gameObject.SetActive(true);
+            m_Progress.gameObject.SetActive(false);
         }
 
         private void OnBackButtonClick()

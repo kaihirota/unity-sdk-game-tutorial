@@ -18,6 +18,7 @@ namespace HyperCasual.Runner
         public List<PackItem> items;
         public string collection;
         public string price;
+        public string function;
     }
     
     [Serializable]

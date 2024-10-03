@@ -6,7 +6,7 @@ import express, {
 } from 'express';
 import cors from 'cors';
 import http from 'http';
-import { providers, Wallet, Contract, utils } from 'ethers';
+import { providers, Wallet, Contract, utils, BigNumber } from 'ethers';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
 
@@ -168,7 +168,7 @@ router.get('/packs', async (req: Request, res: Response) => {
       const packs = [
         {
           name: 'Galactic Shield Pack',
-          description: 'Equip yourself with powerful Galactic Shields that grant temporary immunity to obstacles, allowing for fearless runs!',
+          description: 'Equip yourself with powerful Galactic Shields that grant temporary immunity to obstacles, allowing for fearless runs.',
           items: [
             {
               id: galacticShieldId,
@@ -178,11 +178,12 @@ router.get('/packs', async (req: Request, res: Response) => {
           ],
           collection: packContractAddress,
           image: 'https://cyan-electric-peafowl-878.mypinata.cloud/ipfs/QmSA7X4Jxq2k8oTAricFrYrTrgXajLBLKvVoSfZoM6z4pF',
-          price: '10000000000000000000'
+          price: '10000000000000000000',
+          function: '0x64f54bf2',
         },
         {
           name: 'Clear Skies Pack',
-          description: 'Enjoy the freedom to remove obstacles from your path temporarily, ensuring a smooth and safe journey!',
+          description: 'Enjoy the freedom to remove obstacles from your path temporarily, ensuring a smooth and safe journey.',
           items: [
             {
               id: clearSkiesId,
@@ -192,11 +193,12 @@ router.get('/packs', async (req: Request, res: Response) => {
           ],
           collection: packContractAddress,
           image: 'https://cyan-electric-peafowl-878.mypinata.cloud/ipfs/QmQe7mvDqKiTj6kZqjWzHto64kY64pub9KbxRcYSx3gtHm',
-          price: '8000000000000000000'
+          price: '8000000000000000000',
+          function: '0xd69c42be',
         },
         {
           name: 'Navigator’s Combo Pack',
-          description: 'The perfect balance of protection and navigation, allowing you to tackle any run confidently!',
+          description: 'The perfect balance of protection and navigation, allowing you to tackle any run confidently.',
           items: [
             {
               id: galacticShieldId,
@@ -211,7 +213,8 @@ router.get('/packs', async (req: Request, res: Response) => {
           ],
           collection: packContractAddress,
           image: 'https://cyan-electric-peafowl-878.mypinata.cloud/ipfs/QmfPRGUwQ8XisoJR42HwkTYmeUid7vDcPDrMRetwhvZY31',
-          price: '9000000000000000000'
+          price: '9000000000000000000',
+          function: '0x9c1af459',
         }
       ];
 
@@ -224,6 +227,50 @@ router.get('/packs', async (req: Request, res: Response) => {
   } catch (error) {
     console.log(error);
     return res.status(400).json({ message: 'Failed to mint to user' });
+  }
+},
+);
+
+// Approve pack contract to spend token
+router.post('/pack/checkApprovalRequired', async (req: Request, res: Response) => {
+  try {
+    if (tokenContractAddress && packContractAddress && privateKey) {
+      let address: string = req.body.address ?? null;
+      let amount: string = req.body.amount ?? null;
+
+      // Call allowance
+      const abi = [
+        'function allowance(address owner, address spender) view returns (uint256)',
+        'function approve(address spender, uint256 amount)',
+      ];
+
+      const tokenContract = new Contract(tokenContractAddress, abi, zkEvmProvider);
+      const approvedAmount = await tokenContract.allowance(address, packContractAddress);
+      const approvedAmountDecimal = approvedAmount.toString();
+      console.log(`approvedAmount: ${approvedAmount}`);
+
+      if (BigNumber.from(approvedAmountDecimal).lt(BigNumber.from(amount))) {
+        console.log('The approved amount is less than the requested amount.');
+        let iface = new utils.Interface(abi);
+        let encodedData = iface.encodeFunctionData("approve", [packContractAddress, amount]);
+        console.log(`encodedData: ${encodedData}`);
+
+        return res.status(200).json({
+          to: tokenContractAddress,
+          data: encodedData,
+          amount: 0,
+        });
+      } else {
+        console.log('The approved amount is sufficient.');
+        return res.status(200).json({});
+      }
+    } else {
+      return res.status(500).json({});
+    }
+
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({ message: 'Failed to encode' });
   }
 },
 );
