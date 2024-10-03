@@ -38,7 +38,7 @@ namespace HyperCasual.Runner
         [SerializeField] private AddFunds m_AddFunds;
 
         private AssetType m_Type = AssetType.Skin;
-        
+
         private readonly List<AssetModel> m_Assets = new();
 
         // Pagination
@@ -224,7 +224,7 @@ namespace HyperCasual.Runner
         {
             // Reset default contract
             m_Type = AssetType.Skin;
-            
+
             // Clear the asset list
             m_Assets.Clear();
 

@@ -24,7 +24,7 @@ namespace HyperCasual.Runner
     {
         [SerializeField] private HyperCasualButton m_BackButton;
         [SerializeField] private BalanceObject m_Balance;
-        
+
         [SerializeField] private ImageUrlObject m_Image;
         [SerializeField] private TextMeshProUGUI m_NameText;
         [SerializeField] private TextMeshProUGUI m_DescriptionText;
@@ -122,10 +122,10 @@ namespace HyperCasual.Runner
                 "ERC1155" => $"{m_Asset.name} x{m_Asset.balance}",
                 _ => m_NameText.text
             };
-            
+
             m_DescriptionText.text = m_Asset.description;
             m_DescriptionText.gameObject.SetActive(!string.IsNullOrEmpty(m_Asset.description));
-            
+
             m_TokenIdText.text = $"Token ID: {m_Asset.token_id}";
             m_CollectionText.text = $"Collection: {m_Asset.contract_address}";
             m_ContractTypeText.text = $"Contract type: {m_Asset.contract_type}";
@@ -149,7 +149,7 @@ namespace HyperCasual.Runner
                         newAttribute.Initialise(attribute);
                         m_Attributes.Add(newAttribute);
                     }
-                    
+
                     // Check if asset is listed
                     m_Listing = await GetActiveListingId();
                     m_SellButton.gameObject.SetActive(m_Listing == null);
@@ -167,7 +167,7 @@ namespace HyperCasual.Runner
                     {
                         m_AmountText.text = "Not listed";
                     }
-                    
+
                     m_FloorPriceText.text = "Floor price: -";
                     m_LastTradePriceText.text = "Last trade price: -";
                     GetMarketData();
@@ -175,7 +175,7 @@ namespace HyperCasual.Runner
                 case InventoryScreen.AssetType.Powerups:
                     break;
             }
-            
+
             m_ListingContainer.SetActive(m_Type == InventoryScreen.AssetType.Skin);
             m_AttributesContainer.SetActive(m_Type == InventoryScreen.AssetType.Skin);
             m_MarketContainer.SetActive(m_Type == InventoryScreen.AssetType.Skin);
