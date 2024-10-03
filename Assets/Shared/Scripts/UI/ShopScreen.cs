@@ -26,7 +26,7 @@ namespace HyperCasual.Runner
         [SerializeField] private Transform m_ListParent;
         [SerializeField] private InfiniteScrollGridView m_ScrollView;
         [SerializeField] private AddFunds m_AddFunds;
-        
+
         private readonly List<Pack> m_Packs = new();
 
         /// <summary>

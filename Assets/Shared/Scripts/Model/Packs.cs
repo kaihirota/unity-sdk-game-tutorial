@@ -20,7 +20,7 @@ namespace HyperCasual.Runner
         public string price;
         public string function;
     }
-    
+
     [Serializable]
     public class PackItem
     {

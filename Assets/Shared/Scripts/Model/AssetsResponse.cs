@@ -25,6 +25,8 @@ namespace HyperCasual.Runner
         public string contract_address;
         public List<AssetAttribute> attributes;
         public string metadata_id;
+        public string balance;
+        public string contract_type;
     }
 
     [Serializable]

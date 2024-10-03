@@ -30,7 +30,7 @@ namespace HyperCasual.Runner
         public void Initialise(Pack pack)
         {
             m_Pack = pack;
-            
+
             UpdateData();
         }
 

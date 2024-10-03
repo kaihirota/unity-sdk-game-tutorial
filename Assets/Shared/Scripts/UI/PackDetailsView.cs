@@ -22,7 +22,7 @@ namespace HyperCasual.Runner
         [SerializeField] private TextMeshProUGUI m_NameText;
         [SerializeField] private TextMeshProUGUI m_DescriptionText;
         [SerializeField] private TextMeshProUGUI m_AmountText;
-        
+
         // Attributes
         [SerializeField] private Transform m_ItemsListParent;
 
@@ -33,7 +33,7 @@ namespace HyperCasual.Runner
         [SerializeField] private GameObject m_Progress;
 
         [SerializeField] private CustomDialog m_CustomDialog;
-        
+
         private readonly List<PackItemView> m_Items = new();
 
         private Pack? m_Pack = null;
@@ -41,7 +41,7 @@ namespace HyperCasual.Runner
         private void OnEnable()
         {
             m_ItemObj.gameObject.SetActive(false); // Disable the templateitem object
-            
+
             m_BackButton.RemoveListener(OnBackButtonClick);
             m_BackButton.AddListener(OnBackButtonClick);
             m_BuyButton.RemoveListener(OnBuyButtonClicked);
@@ -70,10 +70,10 @@ namespace HyperCasual.Runner
             m_NameText.text = pack.name;
             m_DescriptionText.text = pack.description;
             m_Image.LoadUrl(pack.image);
-            
+
             var quantity = (decimal)BigInteger.Parse(pack.price) / (decimal)BigInteger.Pow(10, 18);
             m_AmountText.text = $"{quantity} IMR";
-            
+
             // Clear existing items
             ClearItems();
 
@@ -85,7 +85,7 @@ namespace HyperCasual.Runner
                 newItem.Initialise(item);
                 m_Items.Add(newItem);
             }
-            
+
             Debug.Log($"{m_Pack.name}: {m_Pack.function} {m_Pack.collection}");
         }
 
@@ -151,16 +151,16 @@ namespace HyperCasual.Runner
                     await m_CustomDialog.ShowDialog("Failed to buy", "Could not buy pack", "OK");
                     return;
                 }
-                
+
                 await m_CustomDialog.ShowDialog("Success", "You bought a pack!", "OK");
-            } 
+            }
             catch (Exception ex)
             {
                 Debug.Log($"Failed to buy: {ex.Message}");
                 Debug.LogError(ex.StackTrace);
                 await m_CustomDialog.ShowDialog("Failed to buy", ex.Message, "OK");
             }
-            
+
             m_BuyButton.gameObject.SetActive(true);
             m_Progress.gameObject.SetActive(false);
         }
@@ -169,7 +169,7 @@ namespace HyperCasual.Runner
         {
             UIManager.Instance.GoBack();
         }
-        
+
         /// <summary>
         ///     Removes all the item views
         /// </summary>

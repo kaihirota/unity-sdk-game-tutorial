@@ -231,7 +231,7 @@ namespace HyperCasual.Gameplay
             ShowUI<MarketplaceScreen>();
             AudioManager.Instance.PlayMusic(SoundID.MenuMusic);
         }
-        
+
         private void OnShopDisplayed()
         {
             Debug.Log("OnShopDisplayed");

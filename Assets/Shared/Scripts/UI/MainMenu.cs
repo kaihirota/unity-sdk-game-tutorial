@@ -24,7 +24,7 @@ namespace HyperCasual.Runner
         [SerializeField] private HyperCasualButton m_MarketplaceButton;
 
         [SerializeField] private AbstractGameEvent m_MarketplaceButtonEvent;
-        
+
         [SerializeField] private HyperCasualButton m_ShopButton;
 
         [SerializeField] private AbstractGameEvent m_ShopButtonEvent;
@@ -182,7 +182,7 @@ namespace HyperCasual.Runner
         {
             m_MarketplaceButton.gameObject.SetActive(show);
         }
-        
+
         private void ShowShopButton(bool show)
         {
             m_ShopButton.gameObject.SetActive(show);
@@ -199,7 +199,7 @@ namespace HyperCasual.Runner
             m_MarketplaceButtonEvent.Raise();
             AudioManager.Instance.PlayEffect(SoundID.ButtonSound);
         }
-        
+
         public void OnShopButtonClick()
         {
             m_ShopButtonEvent.Raise();
