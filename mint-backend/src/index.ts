@@ -168,12 +168,13 @@ router.get('/packs', async (req: Request, res: Response) => {
       const packs = [
         {
           name: 'Galactic Shield Pack',
-          description: 'Equip yourself with powerful Galactic Shields that grant temporary immunity to obstacles, allowing for fearless runs.',
+          description: 'Gain immunity to obstacles with Galactic Shields. Move through anything in your way.',
           items: [
             {
               id: galacticShieldId,
               name: "Galactic Shield",
               amount: 5,
+              image: 'https://cyan-electric-peafowl-878.mypinata.cloud/ipfs/QmSA7X4Jxq2k8oTAricFrYrTrgXajLBLKvVoSfZoM6z4pF',
             }
           ],
           collection: packContractAddress,
@@ -183,12 +184,13 @@ router.get('/packs', async (req: Request, res: Response) => {
         },
         {
           name: 'Clear Skies Pack',
-          description: 'Enjoy the freedom to remove obstacles from your path temporarily, ensuring a smooth and safe journey.',
+          description: 'Remove cosmic hazards like meteor showers and clear your path for a smooth run.',
           items: [
             {
               id: clearSkiesId,
               name: "Clear Skies",
               amount: 5,
+              image: 'https://cyan-electric-peafowl-878.mypinata.cloud/ipfs/QmQe7mvDqKiTj6kZqjWzHto64kY64pub9KbxRcYSx3gtHm',
             }
           ],
           collection: packContractAddress,
@@ -198,17 +200,19 @@ router.get('/packs', async (req: Request, res: Response) => {
         },
         {
           name: 'Navigator’s Combo Pack',
-          description: 'The perfect balance of protection and navigation, allowing you to tackle any run confidently.',
+          description: 'Get both Galactic Shields and Clear Skies to manage obstacles your way.',
           items: [
             {
               id: galacticShieldId,
               name: "Galactic Shield",
               amount: 3,
+              image: 'https://cyan-electric-peafowl-878.mypinata.cloud/ipfs/QmSA7X4Jxq2k8oTAricFrYrTrgXajLBLKvVoSfZoM6z4pF',
             },
             {
               id: clearSkiesId,
               name: "Clear Skies",
               amount: 3,
+              image: 'https://cyan-electric-peafowl-878.mypinata.cloud/ipfs/QmQe7mvDqKiTj6kZqjWzHto64kY64pub9KbxRcYSx3gtHm',
             }
           ],
           collection: packContractAddress,

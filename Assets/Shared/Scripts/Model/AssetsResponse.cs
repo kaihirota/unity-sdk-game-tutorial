@@ -22,6 +22,7 @@ namespace HyperCasual.Runner
         public string token_id;
         public string image;
         public string name;
+        public string description;
         public string contract_address;
         public List<AssetAttribute> attributes;
         public string metadata_id;

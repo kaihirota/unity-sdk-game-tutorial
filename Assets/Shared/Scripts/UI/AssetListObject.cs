@@ -51,6 +51,7 @@ namespace HyperCasual.Runner
                 _ => m_NameText.text
             };
 
+            m_AmountText.gameObject.SetActive(m_Asset.contract_type == "ERC721");
             m_AmountText.text = "-";
 
             OldListing listing = await GetActiveListingId();
@@ -77,7 +78,7 @@ namespace HyperCasual.Runner
             {
                 using var client = new HttpClient();
                 var url =
-                    $"{Config.BASE_URL}/v1/chains/{Config.CHAIN_NAME}/orders/listings?sell_item_contract_address={Contract.SKIN}&sell_item_token_id={m_Asset.token_id}&status=ACTIVE";
+                    $"{Config.BASE_URL}/v1/chains/{Config.CHAIN_NAME}/orders/listings?sell_item_contract_address={m_Asset.contract_address}&sell_item_token_id={m_Asset.token_id}&status=ACTIVE";
                 Debug.Log($"GetActiveListingId URL: {url}");
 
                 var response = await client.GetAsync(url);

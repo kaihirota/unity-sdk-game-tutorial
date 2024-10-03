@@ -27,5 +27,6 @@ namespace HyperCasual.Runner
         public int id;
         public string name;
         public int amount;
+        public string image;
     }
 }
