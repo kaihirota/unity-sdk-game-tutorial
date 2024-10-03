@@ -152,6 +152,7 @@ namespace HyperCasual.Runner
                     return;
                 }
 
+                m_Balance.UpdateBalance();
                 await m_CustomDialog.ShowDialog("Success", "You bought a pack!", "OK");
             }
             catch (Exception ex)
