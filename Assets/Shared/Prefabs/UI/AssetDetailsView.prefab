@@ -853,7 +853,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 2602276242752267194}
   m_Direction: 2
   m_Value: 1
-  m_Size: 0.8618421
+  m_Size: 0.77134144
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -5560,12 +5560,6 @@ MonoBehaviour:
   m_SellButton: {fileID: 6447972585370965746}
   m_CancelButton: {fileID: 7911634683186926891}
   m_Progress: {fileID: 5596728940165775328}
-  m_EmptyNotListed: {fileID: 5910665483803521813}
-  m_NotListedParent: {fileID: 6414723879218645855}
-  m_NotListedObj: {fileID: 3375346085783155955}
-  m_EmptyListing: {fileID: 1858325117805022117}
-  m_ListingParent: {fileID: 8611774517390306429}
-  m_ListingObj: {fileID: 3239148747071307635}
   m_CustomDialog: {fileID: 6899517871630720637}
 --- !u!1 &7539036871949489094
 GameObject:
@@ -7211,18 +7205,6 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 50caf6d8d6dd146bb9062ee755f77982, type: 3}
---- !u!114 &3239148747071307635 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 2622416885044314232, guid: 50caf6d8d6dd146bb9062ee755f77982,
-    type: 3}
-  m_PrefabInstance: {fileID: 619094165042216715}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0eb6f46e02d544423ab1dfdaae0287c2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!224 &3821769267628310481 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 4440215232704856282, guid: 50caf6d8d6dd146bb9062ee755f77982,
@@ -7686,18 +7668,6 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 074c32efeeb1d454b8681a4c28a2f1dc, type: 3}
---- !u!114 &3375346085783155955 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 7634590879646420912, guid: 074c32efeeb1d454b8681a4c28a2f1dc,
-    type: 3}
-  m_PrefabInstance: {fileID: 5126258101248277315}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cac47b041ba4a47daa1ef34ec139efbd, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!224 &8843645455531899801 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 4440215232704856282, guid: 074c32efeeb1d454b8681a4c28a2f1dc,

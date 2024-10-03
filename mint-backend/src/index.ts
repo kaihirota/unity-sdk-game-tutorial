@@ -25,6 +25,7 @@ const zkEvmProvider = new providers.JsonRpcProvider(`https://rpc.dev.immutable.c
 const foxContractAddress = process.env.FOX_CONTRACT_ADDRESS;
 const tokenContractAddress = process.env.TOKEN_CONTRACT_ADDRESS;
 const skinColourContractAddress = process.env.SKIN_CONTRACT_ADDRESS_COLOUR;
+const packContractAddress = process.env.PACK_CONTRACT_ADDRESS;
 // Private key of wallet with minter role
 const privateKey = process.env.PRIVATE_KEY;
 
@@ -151,6 +152,75 @@ router.get('/balance', async (req: Request, res: Response) => {
       return res.status(500).json({});
     }
 
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({ message: 'Failed to mint to user' });
+  }
+},
+);
+
+// Packs
+const galacticShieldId = 1;
+const clearSkiesId = 2;
+router.get('/packs', async (req: Request, res: Response) => {
+  try {
+    if (packContractAddress) {
+      const packs = [
+        {
+          name: 'Galactic Shield Pack',
+          description: 'Equip yourself with powerful Galactic Shields that grant temporary immunity to obstacles, allowing for fearless runs!',
+          items: [
+            {
+              id: galacticShieldId,
+              name: "Galactic Shield",
+              amount: 5,
+            }
+          ],
+          collection: packContractAddress,
+          image: 'https://cyan-electric-peafowl-878.mypinata.cloud/ipfs/QmSA7X4Jxq2k8oTAricFrYrTrgXajLBLKvVoSfZoM6z4pF',
+          price: '10000000000000000000'
+        },
+        {
+          name: 'Clear Skies Pack',
+          description: 'Enjoy the freedom to remove obstacles from your path temporarily, ensuring a smooth and safe journey!',
+          items: [
+            {
+              id: clearSkiesId,
+              name: "Clear Skies",
+              amount: 5,
+            }
+          ],
+          collection: packContractAddress,
+          image: 'https://cyan-electric-peafowl-878.mypinata.cloud/ipfs/QmQe7mvDqKiTj6kZqjWzHto64kY64pub9KbxRcYSx3gtHm',
+          price: '8000000000000000000'
+        },
+        {
+          name: 'Navigator’s Combo Pack',
+          description: 'The perfect balance of protection and navigation, allowing you to tackle any run confidently!',
+          items: [
+            {
+              id: galacticShieldId,
+              name: "Galactic Shield",
+              amount: 3,
+            },
+            {
+              id: clearSkiesId,
+              name: "Clear Skies",
+              amount: 3,
+            }
+          ],
+          collection: packContractAddress,
+          image: 'https://cyan-electric-peafowl-878.mypinata.cloud/ipfs/QmfPRGUwQ8XisoJR42HwkTYmeUid7vDcPDrMRetwhvZY31',
+          price: '9000000000000000000'
+        }
+      ];
+
+      return res.status(200).json({
+        result: packs
+      });
+    } else {
+      return res.status(500).json({});
+    }
   } catch (error) {
     console.log(error);
     return res.status(400).json({ message: 'Failed to mint to user' });

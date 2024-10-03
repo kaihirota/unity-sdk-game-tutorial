@@ -49,16 +49,6 @@ namespace HyperCasual.Runner
         [SerializeField] private HyperCasualButton m_CancelButton;
         [SerializeField] private GameObject m_Progress;
 
-        // Not listed
-        [SerializeField] private GameObject m_EmptyNotListed;
-        [SerializeField] private Transform m_NotListedParent;
-        [SerializeField] private AssetNotListedObject m_NotListedObj;
-
-        // Listings
-        [SerializeField] private GameObject m_EmptyListing;
-        [SerializeField] private Transform m_ListingParent;
-        [SerializeField] private AssetListingObject m_ListingObj;
-
         [SerializeField] private CustomDialog m_CustomDialog;
 
         private readonly List<AttributeView> m_Attributes = new();
@@ -82,8 +72,6 @@ namespace HyperCasual.Runner
         private void OnEnable()
         {
             m_AttributeObj.gameObject.SetActive(false); // Disable the template attribute object
-            m_NotListedObj.gameObject.SetActive(false); // Hide not listed template object
-            m_ListingObj.gameObject.SetActive(false); // Hide listing template object
 
             m_BackButton.RemoveListener(OnBackButtonClick);
             m_BackButton.AddListener(OnBackButtonClick);

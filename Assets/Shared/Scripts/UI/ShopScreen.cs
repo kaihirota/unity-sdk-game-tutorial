@@ -26,15 +26,13 @@ namespace HyperCasual.Runner
         [SerializeField] private Transform m_ListParent;
         [SerializeField] private InfiniteScrollGridView m_ScrollView;
         [SerializeField] private AddFunds m_AddFunds;
-
-        // Pagination
-        private bool m_IsLoadingMore;
-        private PageModel m_Page;
+        
+        private readonly List<Pack> m_Packs = new();
 
         /// <summary>
         ///     Sets up the inventory list and fetches the player's assets.
         /// </summary>
-        private async void OnEnable()
+        private void OnEnable()
         {
             // Hide pack template item
             m_PackObj.gameObject.SetActive(false);
@@ -49,7 +47,7 @@ namespace HyperCasual.Runner
             {
                 // Setup infinite scroll view and load packs
                 m_ScrollView.OnCreateItemView += OnCreateItemView;
-                m_ScrollView.TotalItemCount = 1;
+                if (m_Packs.Count == 0) LoadPacks();
 
                 // Gets the player's balance
                 m_Balance.UpdateBalance();
@@ -61,14 +59,13 @@ namespace HyperCasual.Runner
         /// </summary>
         private void OnCreateItemView(int index, GameObject item)
         {
-            if (index < 1)
+            if (index < m_Packs.Count)
             {
+                var pack = m_Packs[index];
+
+                // Initialise the view with asset
                 var itemComponent = item.GetComponent<PackListObject>();
-                itemComponent.Initialise(
-                        "Survivor pack", 
-                        "Get 5 shields that provide temporary immunity to obstacles like fire and trees. Stay safe and keep running!", 
-                        "https://cyan-electric-peafowl-878.mypinata.cloud/ipfs/QmSA7X4Jxq2k8oTAricFrYrTrgXajLBLKvVoSfZoM6z4pF"
-                    );
+                itemComponent.Initialise(pack);
                 // Set up click listener
                 var clickable = item.GetComponent<ClickableView>();
                 if (clickable != null)
@@ -76,12 +73,63 @@ namespace HyperCasual.Runner
                     clickable.ClearAllSubscribers();
                     clickable.OnClick += () =>
                     {
-                        var view = UIManager.Instance.GetView<AssetDetailsView>();
+                        var view = UIManager.Instance.GetView<PackDetailsView>();
                         UIManager.Instance.Show(view);
-                        // view.Initialise(asset);
+                        view.Initialise(pack);
                     };
                 }
             }
+        }
+
+        /// <summary>
+        ///     Loads assets and adds them to the scroll view.
+        /// </summary>
+        private async void LoadPacks()
+        {
+            var packs = await GetPacks();
+            if (packs != null && packs.Count > 0)
+            {
+                m_Packs.AddRange(packs);
+                m_ScrollView.TotalItemCount = m_Packs.Count;
+            }
+        }
+
+        // Uses mocked stacks endpoint
+        private async UniTask<List<Pack>> GetPacks()
+        {
+            Debug.Log("Fetching packs...");
+
+            var packs = new List<Pack>();
+
+            try
+            {
+                var url = $"{Config.SERVER_URL}/packs";
+
+                using var client = new HttpClient();
+                var response = await client.GetAsync(url);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseBody = await response.Content.ReadAsStringAsync();
+                    Debug.Log($"Assets response: {responseBody}");
+
+                    if (!string.IsNullOrEmpty(responseBody))
+                    {
+                        packs = JsonUtility.FromJson<Packs>(responseBody).result;
+                    }
+                }
+                else
+                {
+                    // TODO use dialogs
+                    Debug.Log("Failed to fetch packs");
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.Log($"Failed to fetch packs: {ex.Message}");
+            }
+
+            return packs;
         }
 
         /// <summary>
@@ -89,8 +137,8 @@ namespace HyperCasual.Runner
         /// </summary>
         private void OnBackButtonClick()
         {
-            // Reset pagination information
-            m_Page = null;
+            // Clear the asset list
+            m_Packs.Clear();
 
             // Reset the InfiniteScrollView
             m_ScrollView.TotalItemCount = 0;

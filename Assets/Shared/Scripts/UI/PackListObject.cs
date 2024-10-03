@@ -17,9 +17,7 @@ namespace HyperCasual.Runner
         [SerializeField] private TextMeshProUGUI m_DescriptionText;
         [SerializeField] private ImageUrlObject m_Image;
 
-        private string m_Name;
-        private string m_Description;
-        private string m_ImageUrl;
+        private Pack m_Pack;
 
         private void OnEnable()
         {
@@ -29,11 +27,9 @@ namespace HyperCasual.Runner
         /// <summary>
         ///     Initialises the asset object with relevant data and updates the UI.
         /// </summary>
-        public void Initialise(string name, string description, string imageUrl)
+        public void Initialise(Pack pack)
         {
-            m_Name = name;
-            m_Description = description;
-            m_ImageUrl = imageUrl;
+            m_Pack = pack;
             
             UpdateData();
         }
@@ -43,9 +39,12 @@ namespace HyperCasual.Runner
         /// </summary>
         private async void UpdateData()
         {
-            m_NameText.text = m_Name;
-            m_DescriptionText.text = m_Description;
-            m_Image.LoadUrl(m_ImageUrl);
+            if (m_Pack != null)
+            {
+                m_NameText.text = m_Pack.name;
+                m_DescriptionText.text = m_Pack.description;
+                m_Image.LoadUrl(m_Pack.image);
+            }
         }
     }
 }
