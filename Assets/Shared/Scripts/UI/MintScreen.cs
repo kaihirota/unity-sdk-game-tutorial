@@ -127,7 +127,7 @@ namespace HyperCasual.Runner
                 // Show error if failed to mint fox or coins
                 ShowError(!mintedFox);
 
-                // Show next button is minted both fox and coins successfully
+                // Show next button if fox minted successfully
                 ShowNextButton(mintedFox);
             }
             catch (Exception ex)
@@ -170,16 +170,7 @@ namespace HyperCasual.Runner
         private void ShowMintingMessage()
         {
             ShowCheckoutWallet(false);
-            // Get number of coins col
-            int numCoins = GetNumCoinsCollected();
-            if (numCoins > 0)
-            {
-                m_Title.text = $"Let's mint the {numCoins} coin{(numCoins > 1 ? "s" : "")} you've collected and a fox to your wallet";
-            }
-            else
-            {
-                m_Title.text = "Let's mint a fox to your wallet!";
-            }
+            m_Title.text = "Let's mint a fox to your wallet!";
         }
 
         /// <summary>
@@ -194,15 +185,7 @@ namespace HyperCasual.Runner
         private void ShowMintedMessage()
         {
             ShowCheckoutWallet(true);
-            int numCoins = GetNumCoinsCollected();
-            if (numCoins > 0)
-            {
-                m_Title.text = $"You now own {numCoins} coin{(numCoins > 1 ? "s" : "")} and a fox";
-            }
-            else
-            {
-                m_Title.text = "You now own a fox!";
-            }
+            m_Title.text = "You now own a fox!";
         }
 
         async private void OnWalletClicked()
@@ -210,7 +193,7 @@ namespace HyperCasual.Runner
             // Get the player's wallet address to mint the fox to
             string address = await GetWalletAddress();
             // Show the player's tokens on the block explorer page.
-            Application.OpenURL($"https://explorer.testnet.immutable.com/address/{address}?tab=tokens");
+            Application.OpenURL($"https://sandbox.immutascan.io/address/{address}?tab=1");
         }
     }
 }
