@@ -4,7 +4,10 @@ using UnityEngine;
 using UnityEngine.UI;
 using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading;
+using Cysharp.Threading.Tasks;
+using Immutable.Passport;
 
 namespace HyperCasual.Runner
 {
@@ -33,6 +36,9 @@ namespace HyperCasual.Runner
         [SerializeField]
         HyperCasualButton m_WalletButton;
 
+        // If there's an error minting, these values will be used when the player clicks the "Try again" button
+        private bool mintedFox = false;
+
         public void OnEnable()
         {
             // Set listener to 'Next' button
@@ -47,10 +53,56 @@ namespace HyperCasual.Runner
             m_WalletButton.RemoveListener(OnWalletClicked);
             m_WalletButton.AddListener(OnWalletClicked);
 
+            // Reset values
+            mintedFox = false;
+
             Mint();
         }
 
-        private void Mint()
+        /// <summary>
+        /// Gets the wallet address of the player.
+        /// </summary>
+        private async UniTask<string> GetWalletAddress()
+        {
+            string address = await Passport.Instance.GetAddress();
+            return address;
+        }
+
+        /// <summary>
+        /// Mints a fox (i.e. Immutable Runner Fox) to the player's wallet
+        /// </summary>
+        /// <returns>True if minted a fox successfully to player's wallet. Otherwise, false.</returns>
+        private async UniTask<bool> MintFox()
+        {
+            Debug.Log("Minting fox...");
+            try
+            {
+                string address = await GetWalletAddress(); // Get the player's wallet address to mint the fox to
+
+                if (address != null)
+                {
+                    var nvc = new List<KeyValuePair<string, string>>
+                {
+                    // Set 'to' to the player's wallet address
+                    new KeyValuePair<string, string>("to", address)
+                };
+                    using var client = new HttpClient();
+                    string url = $"http://localhost:3000/mint/fox"; // Endpoint to mint fox
+                    using var req = new HttpRequestMessage(HttpMethod.Post, url) { Content = new FormUrlEncodedContent(nvc) };
+                    using var res = await client.SendAsync(req);
+                    return res.IsSuccessStatusCode;
+                }
+
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Debug.Log($"Failed to mint fox: {ex.Message}");
+                return false;
+            }
+        }
+
+        private async void Mint()
         {
             try
             {
@@ -59,12 +111,24 @@ namespace HyperCasual.Runner
                 ShowError(false);
                 ShowNextButton(false);
 
-                // Mint
+                // Mint fox if not minted yet
+                if (!mintedFox)
+                {
+                    mintedFox = await MintFox();
+                }
 
-                ShowMintedMessage();
+                // Show minted message if minted both fox and coins successfully
+                if (mintedFox)
+                {
+                    ShowMintedMessage();
+                }
                 ShowLoading(false);
-                ShowError(false);
-                ShowNextButton(true);
+
+                // Show error if failed to mint fox or coins
+                ShowError(!mintedFox);
+
+                // Show next button is minted both fox and coins successfully
+                ShowNextButton(mintedFox);
             }
             catch (Exception ex)
             {
@@ -141,8 +205,12 @@ namespace HyperCasual.Runner
             }
         }
 
-        private void OnWalletClicked()
+        async private void OnWalletClicked()
         {
+            // Get the player's wallet address to mint the fox to
+            string address = await GetWalletAddress();
+            // Show the player's tokens on the block explorer page.
+            Application.OpenURL($"https://explorer.testnet.immutable.com/address/{address}?tab=tokens");
         }
     }
 }

@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System;
 using System.Collections.Generic;
+using Immutable.Passport;
 
 namespace HyperCasual.Runner
 {
@@ -116,11 +117,39 @@ namespace HyperCasual.Runner
             m_TryAgainButton.RemoveListener(OnTryAgainButtonClicked);
             m_TryAgainButton.AddListener(OnTryAgainButtonClicked);
 
-            ShowNextButton(true);
+            // Show 'Next' button if player is already logged into Passport
+            ShowNextButton(SaveManager.Instance.IsLoggedIn);
+            // Show "Continue with Passport" button if the player is not logged into Passport
+            ShowContinueWithPassportButton(!SaveManager.Instance.IsLoggedIn);
         }
 
-        private void OnContinueWithPassportButtonClicked()
+        private async void OnContinueWithPassportButtonClicked()
         {
+            try
+            {
+                // Show loading
+                ShowContinueWithPassportButton(false);
+                ShowLoading(true);
+
+                // Log into Passport
+                await Passport.Instance.Login();
+
+                // Successfully logged in
+                // Save a persistent flag in the game that the player is logged in
+                SaveManager.Instance.IsLoggedIn = true;
+                // Show 'Next' button
+                ShowNextButton(true);
+                ShowLoading(false);
+                // Take the player to the Setup Wallet screen
+                m_SetupWalletEvent.Raise();
+            }
+            catch (Exception ex)
+            {
+                Debug.Log($"Failed to log into Passport: {ex.Message}");
+                // Show Continue with Passport button again
+                ShowContinueWithPassportButton(true);
+                ShowLoading(false);
+            }
         }
 
         private void OnTryAgainButtonClicked()
