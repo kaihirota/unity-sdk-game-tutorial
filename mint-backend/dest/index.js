@@ -39,7 +39,7 @@ router.post("/mint/fox", async (req, res) => {
         // Set up signer
         const provider = (0, providers_1.getDefaultProvider)("sepolia");
         // Connect to wallet with minter role
-        const signer = new ethers_1.Wallet(privateKey, provider);
+        const ethSigner = new ethers_1.Wallet(privateKey, provider);
         const tokenId = await (0, exports.nextTokenId)(foxContractAddress, client);
         console.log("Next token ID: ", tokenId);
         // recipient
@@ -50,14 +50,14 @@ router.post("/mint/fox", async (req, res) => {
             contract_address: foxContractAddress,
             users: [
                 {
-                    user: recipient,
+                    user: ethSigner.address,
                     tokens: [
                         {
                             id: tokenId.toString(),
                             blueprint: "onchain-metadata",
                             royalties: [
                                 {
-                                    recipient: signer.address,
+                                    recipient: ethSigner.address,
                                     percentage: 1,
                                 },
                             ],
@@ -67,13 +67,37 @@ router.post("/mint/fox", async (req, res) => {
             ],
         };
         const message = (0, keccak256_1.keccak256)((0, strings_1.toUtf8Bytes)(JSON.stringify(mintRequest)));
-        const authSignature = await signer.signMessage((0, utils_1.arrayify)(message));
+        const authSignature = await ethSigner.signMessage((0, utils_1.arrayify)(message));
         mintRequest.auth_signature = authSignature;
+        console.log('sender', ethSigner.address, 'recipient', recipient, 'tokenId', tokenId);
         // Mint
-        const mintResponse = await client.mint(signer, mintRequest);
+        const mintResponse = await client.mint(ethSigner, mintRequest);
         console.log("Mint response: ", mintResponse);
-        res.writeHead(200);
-        res.end(JSON.stringify(mintResponse.results[0]));
+        try {
+            // Transfer to recipient
+            const imxProviderConfig = new sdk_1.x.ProviderConfiguration({
+                baseConfig: {
+                    environment: sdk_1.config.Environment.SANDBOX,
+                },
+            });
+            const starkPrivateKey = await sdk_1.x.generateLegacyStarkPrivateKey(ethSigner);
+            const starkSigner = sdk_1.x.createStarkSigner(starkPrivateKey);
+            const imxProvider = new sdk_1.x.GenericIMXProvider(imxProviderConfig, ethSigner, starkSigner);
+            const result = await imxProvider.transfer({
+                type: "ERC721",
+                receiver: recipient,
+                tokenAddress: foxContractAddress,
+                tokenId: mintResponse.results[0].token_id,
+            });
+            console.log("Transfer result: ", result);
+            res.writeHead(200);
+            res.end(JSON.stringify(mintResponse.results[0]));
+        }
+        catch (error) {
+            console.log(error);
+            res.writeHead(400);
+            res.end(JSON.stringify({ message: "Failed to transfer to user" }));
+        }
     }
     catch (error) {
         console.log(error);

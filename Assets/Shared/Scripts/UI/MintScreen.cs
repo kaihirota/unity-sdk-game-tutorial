@@ -65,6 +65,7 @@ namespace HyperCasual.Runner
         private async UniTask<string> GetWalletAddress()
         {
             string address = await Passport.Instance.GetAddress();
+            Debug.Log($"Wallet address: {address}");
             return address;
         }
 
