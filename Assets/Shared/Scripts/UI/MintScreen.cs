@@ -8,6 +8,15 @@ using System.Net.Http;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Immutable.Passport;
+using Immutable.Passport.Model;
+
+[Serializable]
+public class MintResult
+{
+    public string token_id;
+    public string contract_address;
+    public string tx_id;
+}
 
 namespace HyperCasual.Runner
 {
@@ -73,7 +82,7 @@ namespace HyperCasual.Runner
         /// Mints a fox (i.e. Immutable Runner Fox) to the player's wallet
         /// </summary>
         /// <returns>True if minted a fox successfully to player's wallet. Otherwise, false.</returns>
-        private async UniTask<bool> MintFox()
+        private async UniTask<MintResult> MintFox()
         {
             Debug.Log("Minting fox...");
             try
@@ -91,15 +100,26 @@ namespace HyperCasual.Runner
                     string url = $"http://localhost:3000/mint/fox"; // Endpoint to mint fox
                     using var req = new HttpRequestMessage(HttpMethod.Post, url) { Content = new FormUrlEncodedContent(nvc) };
                     using var res = await client.SendAsync(req);
-                    return res.IsSuccessStatusCode;
+
+                    // Parse JSON and extract token_id
+                    string content = await res.Content.ReadAsStringAsync();
+                    Debug.Log($"Mint fox response: {content}");
+
+                    MintResult mintResult = JsonUtility.FromJson<MintResult>(content);
+                    Debug.Log($"Minted fox with token_id: {mintResult.token_id}");
+
+                    mintedFox = res.IsSuccessStatusCode;
+                    return mintResult;
                 }
 
-                return false;
+                mintedFox = false;
+                return null;
             }
             catch (Exception ex)
             {
                 Debug.Log($"Failed to mint fox: {ex.Message}");
-                return false;
+                mintedFox = false;
+                return null;
             }
         }
 
@@ -115,30 +135,33 @@ namespace HyperCasual.Runner
                 // Mint fox if not minted yet
                 if (!mintedFox)
                 {
-                    mintedFox = await MintFox();
-                }
+                    MintResult mintResult = await MintFox();
 
-                // Show minted message if minted both fox and coins successfully
-                if (mintedFox)
-                {
+                    // Show minted message if minted fox successfully
                     ShowMintedMessage();
+
+                    // burn
+                    ShowBurningMessage();
+                    CreateTransferResponseV1 transferResult = await Passport.Instance.ImxTransfer(
+                        new UnsignedTransferRequest("ERC721", "1", "0x0000000000000000000000000000000000000000", mintResult.token_id, mintResult.contract_address)
+                    );
+                    Debug.Log($"Transfer(id={transferResult.transfer_id} receiver={transferResult.receiver} status={transferResult.status})");
                 }
-                ShowLoading(false);
-
-                // Show error if failed to mint fox or coins
-                ShowError(!mintedFox);
-
-                // Show next button if fox minted successfully
-                ShowNextButton(mintedFox);
             }
             catch (Exception ex)
             {
                 // Failed to mint, let the player try again
-                Debug.Log($"Failed to mint: {ex.Message}");
-                ShowLoading(false);
+                Debug.Log($"Failed to mint or transfer: {ex.Message}");
                 ShowError(true);
-                ShowNextButton(false);
             }
+            ShowLoading(false);
+
+            // Show error if failed to mint fox
+            ShowError(!mintedFox);
+
+            // Show next button if fox minted successfully
+            ShowNextButton(mintedFox);
+            return;
         }
 
         private void OnNextButtonClicked()
@@ -174,6 +197,12 @@ namespace HyperCasual.Runner
             m_Title.text = "Let's mint a fox to your wallet!";
         }
 
+        private void ShowBurningMessage()
+        {
+            ShowCheckoutWallet(false);
+            m_Title.text = "Sacrificing fox...";
+        }
+
         /// <summary>
         /// Get the number of coins the player collected from the Level Complete Screen
         /// </summary>
@@ -187,6 +216,12 @@ namespace HyperCasual.Runner
         {
             ShowCheckoutWallet(true);
             m_Title.text = "You now own a fox!";
+        }
+
+        private void ShowBurnedMessage()
+        {
+            ShowCheckoutWallet(true);
+            m_Title.text = "You have sacrificed a fox!";
         }
 
         async private void OnWalletClicked()
