@@ -316,7 +316,7 @@ namespace HyperCasual.Runner
                 float distanceTravelledSinceLastFrame = (m_Transform.position - m_LastPosition).magnitude;
                 float distancePerSecond = distanceTravelledSinceLastFrame / deltaTime;
 
-                m_Animator.SetFloat(s_Speed, distancePerSecond);
+                // m_Animator.SetFloat(s_Speed, distancePerSecond);
             }
 
             if (m_Transform.position != m_LastPosition)

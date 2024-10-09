@@ -68,6 +68,38 @@ namespace HyperCasual.Runner
             Mint();
         }
 
+        private async void Mint()
+        {
+            try
+            {
+                ShowMintingMessage();
+                ShowLoading(true);
+                ShowError(false);
+                ShowNextButton(false);
+
+                // Mint fox if not minted yet
+                if (!mintedFox)
+                {
+                    MintResult mintResult = await MintFox();
+
+                    // Show minted message if minted fox successfully
+                    ShowMintedMessage();
+                }
+            }
+            catch (Exception ex)
+            {
+                // Failed to mint, let the player try again
+                Debug.Log($"Failed to mint or transfer: {ex.Message}");
+            }
+            ShowLoading(false);
+
+            // Show error if failed to mint fox
+            ShowError(!mintedFox);
+
+            // Show next button if fox minted successfully
+            ShowNextButton(mintedFox);
+        }
+
         /// <summary>
         /// Gets the wallet address of the player.
         /// </summary>
@@ -121,47 +153,6 @@ namespace HyperCasual.Runner
                 mintedFox = false;
                 return null;
             }
-        }
-
-        private async void Mint()
-        {
-            try
-            {
-                ShowMintingMessage();
-                ShowLoading(true);
-                ShowError(false);
-                ShowNextButton(false);
-
-                // Mint fox if not minted yet
-                if (!mintedFox)
-                {
-                    MintResult mintResult = await MintFox();
-
-                    // Show minted message if minted fox successfully
-                    ShowMintedMessage();
-
-                    // burn
-                    ShowBurningMessage();
-                    CreateTransferResponseV1 transferResult = await Passport.Instance.ImxTransfer(
-                        new UnsignedTransferRequest("ERC721", "1", "0x0000000000000000000000000000000000000000", mintResult.token_id, mintResult.contract_address)
-                    );
-                    Debug.Log($"Transfer(id={transferResult.transfer_id} receiver={transferResult.receiver} status={transferResult.status})");
-                }
-            }
-            catch (Exception ex)
-            {
-                // Failed to mint, let the player try again
-                Debug.Log($"Failed to mint or transfer: {ex.Message}");
-                ShowError(true);
-            }
-            ShowLoading(false);
-
-            // Show error if failed to mint fox
-            ShowError(!mintedFox);
-
-            // Show next button if fox minted successfully
-            ShowNextButton(mintedFox);
-            return;
         }
 
         private void OnNextButtonClicked()
