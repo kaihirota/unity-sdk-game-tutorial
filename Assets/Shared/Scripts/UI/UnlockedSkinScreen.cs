@@ -65,7 +65,7 @@ namespace HyperCasual.Runner
             get => m_CraftState;
             set
             {
-                CraftState = value;
+                m_CraftState = value;
                 switch (m_CraftState)
                 {
                     case CraftSkinState.Crafting:
@@ -134,14 +134,14 @@ namespace HyperCasual.Runner
         private async void Craft()
         {
             try {
-                // CraftState = CraftSkinState.Crafting;
+                m_CraftState = CraftSkinState.Crafting;
 
                 // burn
                 Asset[] assets = await GetAssets();
                 if (assets.Length == 0)
                 {
                     Debug.Log("No assets to burn");
-                    CraftState = CraftSkinState.Failed;
+                    m_CraftState = CraftSkinState.Failed;
                     return;
                 }
 
@@ -150,17 +150,17 @@ namespace HyperCasual.Runner
                 );
                 Debug.Log($"Transfer(id={transferResult.transfer_id} receiver={transferResult.receiver} status={transferResult.status})");
 
-                // CraftState = CraftSkinState.Crafted;
+                m_CraftState = CraftSkinState.Crafted;
 
                 // If successfully crafted skin and this screen is visible, go to collect skin screen
                 // otherwise it will be picked in the OnEnable function above when this screen reappears
-                // if (m_CraftState == CraftSkinState.Crafted && gameObject.active)
-                // {
-                //     CollectSkin();
-                // }
+                if (m_CraftState == CraftSkinState.Crafted && gameObject.active)
+                {
+                    CollectSkin();
+                }
             } catch (Exception ex) {
                 Debug.Log($"Failed to craft skin: {ex.Message}");
-                // CraftState = CraftSkinState.Failed;
+                m_CraftState = CraftSkinState.Failed;
             }
         }
 
