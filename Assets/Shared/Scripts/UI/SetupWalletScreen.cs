@@ -55,15 +55,9 @@ namespace HyperCasual.Runner
                 ShowSuccess(false);
 
                 // Set up provider
-                await Passport.Instance.ConnectImx();
-
-                Debug.Log("Checking if wallet is registered offchain...");
-                bool isRegistered = await Passport.Instance.IsRegisteredOffchain();
-                if (!isRegistered)
-                {
-                    Debug.Log("Registering wallet offchain...");
-                    await Passport.Instance.RegisterOffchain();
-                }
+                await Passport.Instance.ConnectEvm();
+                // Set up wallet (includes creating a wallet for new players)
+                await Passport.Instance.ZkEvmRequestAccounts();
 
                 m_Title.text = "Your wallet has been successfully set up!";
                 ShowLoading(false);

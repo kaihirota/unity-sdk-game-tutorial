@@ -24,10 +24,11 @@ app.use((0, cors_1.default)()); // Enable CORS
 const router = express_1.default.Router();
 // Contract addresses
 const foxContractAddress = process.env.FOX_CONTRACT_ADDRESS;
+const tokenContractAddress = process.env.TOKEN_CONTRACT_ADDRESS;
 // Private key of wallet with minter role
 const privateKey = process.env.PRIVATE_KEY;
 // Mint Immutable Runner Fox
-router.post("/mint/fox", async (req, res) => {
+router.post("/x/mint/fox", async (req, res) => {
     if (!foxContractAddress || !privateKey) {
         res.writeHead(500);
         res.end();
@@ -69,7 +70,7 @@ router.post("/mint/fox", async (req, res) => {
         const message = (0, keccak256_1.keccak256)((0, strings_1.toUtf8Bytes)(JSON.stringify(mintRequest)));
         const authSignature = await ethSigner.signMessage((0, utils_1.arrayify)(message));
         mintRequest.auth_signature = authSignature;
-        console.log('sender', ethSigner.address, 'recipient', recipient, 'tokenId', tokenId);
+        console.log("sender", ethSigner.address, "recipient", recipient, "tokenId", tokenId);
         // Mint
         const mintResponse = await client.mint(ethSigner, mintRequest);
         console.log("Mint response: ", mintResponse);
@@ -135,6 +136,75 @@ const nextTokenId = async (collectionAddress, imxClient) => {
     }
 };
 exports.nextTokenId = nextTokenId;
+const gasOverrides = {
+    // Use parameter to set tip for EIP1559 transaction (gas fee)
+    maxPriorityFeePerGas: 10e9, // 10 Gwei. This must exceed minimum gas fee expectation from the chain
+    maxFeePerGas: 15e9, // 15 Gwei
+};
+const zkEvmProvider = new providers_1.JsonRpcProvider("https://rpc.testnet.immutable.com");
+// Mint Immutable Runner Fox
+router.post("/mint/fox", async (req, res) => {
+    try {
+        if (foxContractAddress && privateKey) {
+            // Get the address to mint the fox to
+            let to = req.body.to ?? null;
+            // Get the quantity to mint if specified, default is one
+            let quantity = parseInt(req.body.quantity ?? "1");
+            // Connect to wallet with minter role
+            const signer = new ethers_1.Wallet(privateKey).connect(zkEvmProvider);
+            // Specify the function to call
+            const abi = ["function mintByQuantity(address to, uint256 quantity)"];
+            // Connect contract to the signer
+            const contract = new ethers_1.Contract(foxContractAddress, abi, signer);
+            // Mints the number of tokens specified
+            const tx = await contract.mintByQuantity(to, quantity, gasOverrides);
+            await tx.wait();
+            res.writeHead(200);
+            res.end(JSON.stringify({ message: "Minted foxes" }));
+        }
+        else {
+            res.writeHead(400);
+            res.end(JSON.stringify({ message: "Failed to mint" }));
+        }
+    }
+    catch (error) {
+        console.log(error);
+        res.writeHead(500);
+        res.end(JSON.stringify({ message: error }));
+    }
+});
+// Mint Immutable Runner Token
+router.post("/mint/token", async (req, res) => {
+    try {
+        if (tokenContractAddress && privateKey) {
+            console.log(req.body);
+            // Get the address to mint the token to
+            let to = req.body.to ?? null;
+            // Get the quantity to mint if specified, default is one
+            let quantity = BigInt(req.body.quantity ?? "1");
+            // Connect to wallet with minter role
+            const signer = new ethers_1.Wallet(privateKey).connect(zkEvmProvider);
+            // Specify the function to call
+            const abi = ["function mint(address to, uint256 quantity)"];
+            // Connect contract to the signer
+            const contract = new ethers_1.Contract(tokenContractAddress, abi, signer);
+            // Mints the number of tokens specified
+            const tx = await contract.mint(to, quantity, gasOverrides);
+            await tx.wait();
+            res.writeHead(200);
+            res.end(JSON.stringify({ message: "Minted ERC20 tokens" }));
+        }
+        else {
+            res.writeHead(400);
+            res.end(JSON.stringify({ message: "Failed to mint ERC20 tokens" }));
+        }
+    }
+    catch (error) {
+        console.log(error);
+        res.writeHead(500);
+        res.end(JSON.stringify({ message: error }));
+    }
+});
 app.use("/", router);
 http_1.default
     .createServer(app)

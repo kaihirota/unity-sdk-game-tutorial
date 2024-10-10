@@ -133,24 +133,20 @@ namespace HyperCasual.Runner
 
         private async void Craft()
         {
+            const string runnerTokenContractAddress = "0xd14983206B7f2348b976878cCF097E55E1461977";
             try {
                 m_CraftState = CraftSkinState.Crafting;
 
-                // burn
-                Asset[] assets = await GetAssets();
-                if (assets.Length == 0)
+                // Burn tokens and mint a new skin i.e. crafting a skin
+                TransactionReceiptResponse response = await Passport.Instance.ZkEvmSendTransactionWithConfirmation(new TransactionRequest()
                 {
-                    Debug.Log("No assets to burn");
-                    m_CraftState = CraftSkinState.Failed;
-                    return;
-                }
+                    to = runnerTokenContractAddress, // Immutable Runner Token contract address
+                    data = "0x1e957f1e", // Call craftSkin() in the contract
+                    value = "0"
+                });
+                Debug.Log($"Craft transaction hash: {response.transactionHash}");
 
-                CreateTransferResponseV1 transferResult = await Passport.Instance.ImxTransfer(
-                    new UnsignedTransferRequest("ERC721", "1", "0x0000000000000000000000000000000000000000", assets[0].token_id, assets[0].token_address)
-                );
-                Debug.Log($"Transfer(id={transferResult.transfer_id} receiver={transferResult.receiver} status={transferResult.status})");
-
-                m_CraftState = CraftSkinState.Crafted;
+                m_CraftState = response.status != "1" ? CraftSkinState.Failed : CraftSkinState.Crafted;
 
                 // If successfully crafted skin and this screen is visible, go to collect skin screen
                 // otherwise it will be picked in the OnEnable function above when this screen reappears

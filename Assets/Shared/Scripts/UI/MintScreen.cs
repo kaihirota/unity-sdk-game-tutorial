@@ -5,18 +5,11 @@ using UnityEngine.UI;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Numerics;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Immutable.Passport;
 using Immutable.Passport.Model;
-
-[Serializable]
-public class MintResult
-{
-    public string token_id;
-    public string contract_address;
-    public string tx_id;
-}
 
 namespace HyperCasual.Runner
 {
@@ -47,6 +40,7 @@ namespace HyperCasual.Runner
 
         // If there's an error minting, these values will be used when the player clicks the "Try again" button
         private bool mintedFox = false;
+        private bool mintedCoins = false;
 
         public void OnEnable()
         {
@@ -64,6 +58,7 @@ namespace HyperCasual.Runner
 
             // Reset values
             mintedFox = false;
+            mintedCoins = false;
 
             Mint();
         }
@@ -80,9 +75,17 @@ namespace HyperCasual.Runner
                 // Mint fox if not minted yet
                 if (!mintedFox)
                 {
-                    MintResult mintResult = await MintFox();
+                    mintedFox = await MintFox();
+                }
+                // Mint coins if not minted yet
+                if (!mintedCoins)
+                {
+                    mintedCoins = await MintCoins();
+                }
 
-                    // Show minted message if minted fox successfully
+                // Show minted message if minted both fox and coins successfully
+                if (mintedFox && mintedCoins)
+                {
                     ShowMintedMessage();
                 }
             }
@@ -105,15 +108,15 @@ namespace HyperCasual.Runner
         /// </summary>
         private async UniTask<string> GetWalletAddress()
         {
-            string address = await Passport.Instance.GetAddress();
-            return address;
+            List<string> accounts = await Passport.Instance.ZkEvmRequestAccounts();
+            return accounts[0]; // Get the first wallet address
         }
 
         /// <summary>
         /// Mints a fox (i.e. Immutable Runner Fox) to the player's wallet
         /// </summary>
         /// <returns>True if minted a fox successfully to player's wallet. Otherwise, false.</returns>
-        private async UniTask<MintResult> MintFox()
+        private async UniTask<bool> MintFox()
         {
             Debug.Log("Minting fox...");
             try
@@ -132,25 +135,66 @@ namespace HyperCasual.Runner
                     using var req = new HttpRequestMessage(HttpMethod.Post, url) { Content = new FormUrlEncodedContent(nvc) };
                     using var res = await client.SendAsync(req);
 
-                    // Parse JSON and extract token_id
                     string content = await res.Content.ReadAsStringAsync();
                     Debug.Log($"Mint fox response: {content}");
 
-                    MintResult mintResult = JsonUtility.FromJson<MintResult>(content);
-                    Debug.Log($"Minted fox with token_id: {mintResult.token_id}");
-
-                    mintedFox = res.IsSuccessStatusCode;
-                    return mintResult;
+                    return res.IsSuccessStatusCode;
                 }
 
-                mintedFox = false;
-                return null;
+                return false;
             }
             catch (Exception ex)
             {
                 Debug.Log($"Failed to mint fox: {ex.Message}");
-                mintedFox = false;
-                return null;
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Mints collected coins (i.e. Immutable Runner Token) to the player's wallet
+        /// </summary>
+        /// <returns>True if minted coins successfully to player's wallet. Otherwise, false.</returns>
+        private async UniTask<bool> MintCoins()
+        {
+            Debug.Log("Minting coins...");
+            try
+            {
+                int coinsCollected = GetNumCoinsCollected(); // Get number of coins collected
+                if (coinsCollected == 0) // Don't mint any coins if player did not collect any
+                {
+                    return true;
+                }
+
+                string address = await GetWalletAddress(); // Get the player's wallet address to mint the coins to
+                if (address != null)
+                {
+                    // Calculate the quantity to mint
+                    // Need to take into account Immutable Runner Token decimal value i.e. 18
+                    BigInteger quantity = BigInteger.Multiply(new BigInteger(coinsCollected), BigInteger.Pow(10, 18));
+                    Debug.Log($"Quantity: {quantity}");
+                    var nvc = new List<KeyValuePair<string, string>> {
+                        // Set 'to' to the player's wallet address
+                        new KeyValuePair<string, string>("to", address),
+                        // Set 'quanity' to the number of coins collected
+                        new KeyValuePair<string, string>("quantity", quantity.ToString())
+                    };
+                    using var client = new HttpClient();
+                    string url = $"http://localhost:3000/mint/token"; // Endpoint to mint token
+                    using var req = new HttpRequestMessage(HttpMethod.Post, url) { Content = new FormUrlEncodedContent(nvc) };
+                    using var res = await client.SendAsync(req);
+
+                    string content = await res.Content.ReadAsStringAsync();
+                    Debug.Log($"Mint tokens response: {content}");
+
+                    return res.IsSuccessStatusCode;
+                }
+
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Debug.Log($"Failed to mint coins: {ex.Message}");
+                return false;
             }
         }
 
@@ -184,7 +228,16 @@ namespace HyperCasual.Runner
         private void ShowMintingMessage()
         {
             ShowCheckoutWallet(false);
-            m_Title.text = "Let's mint a fox to your wallet!";
+            // Get number of coins col
+            int numCoins = GetNumCoinsCollected();
+            if (numCoins > 0)
+            {
+                m_Title.text = $"Let's mint the {numCoins} coin{(numCoins > 1 ? "s" : "")} you've collected and a fox to your wallet";
+            }
+            else
+            {
+                m_Title.text = "Let's mint a fox to your wallet!";
+            }
         }
 
         private void ShowBurningMessage()
@@ -205,13 +258,15 @@ namespace HyperCasual.Runner
         private void ShowMintedMessage()
         {
             ShowCheckoutWallet(true);
-            m_Title.text = "You now own a fox!";
-        }
-
-        private void ShowBurnedMessage()
-        {
-            ShowCheckoutWallet(true);
-            m_Title.text = "You have sacrificed a fox!";
+            int numCoins = GetNumCoinsCollected();
+            if (numCoins > 0)
+            {
+                m_Title.text = $"You now own {numCoins} coin{(numCoins > 1 ? "s" : "")} and a fox";
+            }
+            else
+            {
+                m_Title.text = "You now own a fox!";
+            }
         }
 
         async private void OnWalletClicked()
@@ -219,7 +274,7 @@ namespace HyperCasual.Runner
             // Get the player's wallet address to mint the fox to
             string address = await GetWalletAddress();
             // Show the player's tokens on the block explorer page.
-            Application.OpenURL($"https://sandbox.immutascan.io/address/{address}?tab=1");
+            Application.OpenURL($"https://explorer.testnet.immutable.com/address/{address}?tab=tokens");
         }
     }
 }

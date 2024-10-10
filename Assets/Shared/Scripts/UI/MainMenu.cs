@@ -53,7 +53,7 @@ namespace HyperCasual.Runner
                 // Set up wallet if successful
                 if (success)
                 {
-                    await Passport.Instance.ConnectImx();
+                    await Passport.Instance.ConnectEvm();
                 }
             } else {
                 // No saved credentials to re-login the player, reset the login flag

@@ -6,7 +6,7 @@ async function main() {
 
   // Deploy the contract to the zkEVM network
   const contract = await contractFactory.deploy(
-    'YOUR_IMMUTABLE_RUNNER_SKIN_CONTRACT_ADDRESS', // Immutable Runner Skin contract address
+    "0x9b74823f4bcbcb3e0f74cadc3a1d2552a18777ed" // Immutable Runner Skin contract address
   );
 
   console.log('Contract deployed to:', await contract.getAddress());
